@@ -34,11 +34,10 @@ SIM_LABEL := $(if $(strip $(SIM)),$(strip $(SIM)),default_sim)
 .PHONY: run-logged run-logged-waves clean
 
 # run-logged 目标依赖日志目录；执行时会调用默认 sim 规则，并把所有终端输出同步写入日志文件，
-# 同时强制启用 Verilator 波形导出并把 VCD 复制到日志目录
+# 同时强制启用 Verilator 波形导出并把 VCD 复制到日志目录（统一命名为 report.*）
 run-logged: | $(LOG_DIR)
-	@ts=$$(date +%Y%m%d_%H%M%S); \
-	  log="$(LOG_DIR)/$(SIM_LABEL)_$$ts.log"; \
-	  wave="$(LOG_DIR)/$(SIM_LABEL)_$$ts.vcd"; \
+	@log="$(LOG_DIR)/report.log"; \
+	  wave="$(LOG_DIR)/report.vcd"; \
 	  echo "[cocotb] 仿真输出将记录到 $$log"; \
 	  echo "[cocotb] Verilator 将生成波形文件 $$wave"; \
 	  if VERILATOR_TRACE=1 $(MAKE) --no-print-directory sim 2>&1 | tee "$$log"; then \

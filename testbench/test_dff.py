@@ -32,7 +32,7 @@ async def test_dff_simple(dut):
     # 我们的测试将对 10 个随机值进行验证，然后结束。
     for i in range(10):
         # 生成一个随机值，取值为 0 或 1
-        val = random.randint(0, 1)
+        val = random.randint(0, 7)
         # 将刚才生成的随机值赋给输入端口 d。
         # 注意：必须使用 .value 属性，直接写 "dut.d = val" 是无效的。
         dut.d.value = val  # 将随机值 val 赋给输入端口 d
