@@ -23,7 +23,7 @@ async def test_dff_simple(dut):
     logger.debug("This is a debug message")
     logger.info("This is an info message")
     # 创建时钟对象：第一个参数是 DUT 中的时钟信号，第二个参数是周期，第三个参数是周期的单位。
-    clock = Clock(dut.clk, 10, units="us")  # 在 clk 端口上创建一个周期为 10 微秒的时钟
+    clock = Clock(dut.clk, 10, unit="us")  # 在 clk 端口上创建一个周期为 10 微秒的时钟
     # clock.start() 也是一个异步函数，调用 cocotb.start_soon() 后会立即启动时钟，
     # 而不会阻塞当前测试函数的执行。时钟将持续运行直到仿真结束。
     cocotb.start_soon(clock.start())  # 启动时钟
@@ -39,5 +39,7 @@ async def test_dff_simple(dut):
         # await 是 Python 的保留关键字，用于等待一个异步操作完成。
         # 此处等待时钟 clk 的下降沿到来。
         await FallingEdge(dut.clk)
+        # 打印当前周期的 d 和 q 值到日志
+        logger.info(f"周期 {i}: d = {dut.d.value}, q = {dut.q.value}")
         # 检查输出 q 是否等于 val；如果不等，则抛出断言错误，并显示指定的错误信息。
         assert dut.q.value == val, f"在第 {i} 个周期，输出 q 的值不正确。实际得到 {dut.q.value}，期望值为 {val}"

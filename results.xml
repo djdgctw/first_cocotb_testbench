@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1762741730" />
+    <testcase name="test_dff_simple" classname="test_dff" file="/home/fyt/sim_cocotb/first_cocotb_testbench/testbench/test_dff.py" lineno="13" time="0.0007281303405761719" sim_time_ns="95000.0" ratio_time="130471146.03798297" />
+  </testsuite>
+</testsuites>
