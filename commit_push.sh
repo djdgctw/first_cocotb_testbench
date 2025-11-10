@@ -3,7 +3,7 @@
 #
 # 简易 Git 提交/推送脚本（适用于 Linux Bash）
 # 用法示例：
-#   ./commit_push.ps1 -m "feat: update" -b main -u "djdgctw" -e "3027610893@qq.com"
+#   ./commit_push.sh -m "feat: update" -b main -u "djdgctw" -e "3027610893@qq.com"
 # 说明：
 #   - 未配置 user.name / user.email 时可通过 -u/-e 设置；
 #   - 自动忽略并清理 .idea 目录；
@@ -19,7 +19,7 @@ useremail=""
 usage() {
   cat <<'EOF'
 用法：
-  ./commit_push.ps1 [选项]
+  ./commit_push.sh [选项]
 选项：
   -m, --message    提交信息（默认：auto commit）
   -b, --branch     分支名称（默认：main）
@@ -126,7 +126,7 @@ commit_and_push() {
 
   if ! git remote get-url origin >/dev/null 2>&1; then
     echo "未检测到 origin 远程仓库，请先执行: git remote add origin <url>"
-    return
+    return 1
   fi
 
   git push -u origin "$branch"
@@ -138,8 +138,12 @@ main() {
   ensure_git_identity
   clean_idea
   ensure_branch
-  commit_and_push
-  echo "Push 完成"
+  if commit_and_push; then
+    echo "Push 完成"
+  else
+    echo "Push 未完成，请先配置远程仓库后重试"
+    exit 1
+  fi
 }
 
 main "$@"
