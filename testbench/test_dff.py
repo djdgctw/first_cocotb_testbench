@@ -7,6 +7,7 @@ import cocotb
 # 不这样做会导致代码冗长且可读性差。因此，这种导入方式是一种良好的编程习惯。
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
+import logging
 
 # @cocotb.test() 是一个 Python 装饰器，用于告诉 cocotb 框架：紧接其下的函数是一个 cocotb 测试用例。
 @cocotb.test()
@@ -16,7 +17,11 @@ async def test_dff_simple(dut):
     # 函数定义下方用三个引号括起来的内容是文档字符串（docstring）。
     # 在 cocotb 中，测试函数的 docstring 会在运行测试时显示出来。
     """ 测试输入 d 能正确传递到输出 q """
-
+     # Create a logger for this testbench
+    logger = logging.getLogger("my_testbench")
+    logger.setLevel(logging.DEBUG) #加上这行后面的就正确显示到日志
+    logger.debug("This is a debug message")
+    logger.info("This is an info message")
     # 创建时钟对象：第一个参数是 DUT 中的时钟信号，第二个参数是周期，第三个参数是周期的单位。
     clock = Clock(dut.clk, 10, units="us")  # 在 clk 端口上创建一个周期为 10 微秒的时钟
     # clock.start() 也是一个异步函数，调用 cocotb.start_soon() 后会立即启动时钟，
