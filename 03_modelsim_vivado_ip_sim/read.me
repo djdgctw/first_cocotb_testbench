@@ -1,0 +1,26 @@
+# Cocotb + ModelSim + Vivado 加/乘 IP 联合仿真
+
+演示如何让 cocotb 同时驱动 Vivado 生成的 `c_addsub`（加法器）与 `mult_gen`（乘法器）IP，并使用 ModelSim 或其它支持的仿真器完成联合验证。
+
+## 环境要求
+- Vivado 2022.2（工程路径 `/home/fyt/B/Prj_SpinalHDL_Vivado/01_HDMI/project_HDMI`，负责导出 `c_addsub_0`、`mult_gen_0` 仿真文件）
+- 推荐使用支持 2022.2 加密 netlist 的 ModelSim/Questa（≥ 2022.10）。如果只能用 ModelSim 2020.4，需要按 Vivado 自动脚本包含完整的 `compile.do` 里提到的库，否则会报 “in protected region”。
+- 安装 cocotb 的 Python 环境
+
+## 关键文件 / 目录
+- `src/add.v`：顶层 RTL，实例化 `c_addsub_0`（8bit+8bit→9bit）与 `mult_gen_0`（18bit×18bit→36bit）两个 IP。
+- `testbench/my_test.py`：cocotb 测试，同步驱动加法器与乘法器，考虑到 IP 管线延迟做随机验证。
+- `Makefile`：默认包含 `src/add.v`，并可 `include mk/ip_*.mk` 自动追加 Vivado 导出的全部 IP 仿真源；支持 `SIM=ModelSim` 运行
+- `tools/gen_sources_from_do.py`：辅助脚本，可解析 Vivado `compile.do` 自动生成 `VHDL_SOURCES/VERILOG_SOURCES` 片段，避免手工维护文件列表。
+- `mk/ip_*.mk`（由 `make gen_ip_mk` 生成）：保存每个 Vivado IP 的源文件列表，确保旧版 ModelSim 也能拿到完整依赖。
+
+## 使用方式
+```bash
+cd /home/fyt/sim_cocotb/modelsim_vivado_ip_sim
+make gen_ip_mk             # 扫描 Vivado IP，生成 mk/ip_*.mk
+MODELSIM_BIN_DIR=/path/to/modelsim/bin make run-logged   # 运行 cocotb + ModelSim
+
+# 重新导出 IP 后，记得再次执行 make gen_ip_mk
+```
+
+> 注意：ModelSim 2020.4 无法直接解密 Vivado 2022.2 Netlist。必须要么升级仿真器，要么依照 `make gen_ip_mk` 生成的 mk 片段把 Vivado 自动提供的仿真源完整纳入，或者直接切换到 `SIM=xsim`。
