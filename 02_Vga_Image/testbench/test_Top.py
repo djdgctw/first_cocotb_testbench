@@ -121,5 +121,5 @@ async def test_top(dut):
 
     # ========= 存成 PNG 图片 =========
     img = Image.fromarray(frame, mode="RGB")
-    img.save("/home/fyt/Spinal_FPGA/study_doc/cocotb_sim_VGA/logs/frame0.png")
+    img.save("/home/fyt/sim_cocotb/first_cocotb_testbench/02_Vga_Image/logs/frame0.png")
     dut._log.info("已将一帧图像保存为 frame0.png")

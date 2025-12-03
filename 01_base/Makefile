@@ -8,7 +8,6 @@ TOPLEVEL_LANG = verilog
 # 指定要仿真的 Verilog/SystemVerilog 源文件路径。
 # 此处使用的是 src 目录下的 dff.sv 文件（一个 D 触发器模块）。
 VERILOG_SOURCES = $(PWD)/src/dff.sv
-
 # 指定顶层模块（top-level module）的名称，必须与 Verilog 文件中的 module 名称一致。
 TOPLEVEL = dff
 
