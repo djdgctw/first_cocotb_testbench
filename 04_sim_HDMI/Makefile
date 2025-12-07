@@ -47,8 +47,8 @@ MK_DIR := $(PWD)/mk
 include $(wildcard $(MK_DIR)/ip_*.mk)
 
 # Cocotb 顶层设置
-COCOTB_TOPLEVEL = HdmiCocotbTop
-COCOTB_TEST_MODULES = my_test
+TOPLEVEL = HdmiCocotbTop
+MODULE = my_test
 SIM ?= ModelSim
 
 # 引入 Cocotb 标准 Makefile
@@ -91,7 +91,8 @@ run-logged: | $(LOG_DIR)
 	  fi
 clean::
 	@rm -rf $(LOG_DIR) sim_build results.xml
-	@rm -f *.log
+	@rm -f *.log modelsim.ini transcript
+	@rm -rf testbench/__pycache__
 
 gen_ip_mk:
 	@mkdir -p $(MK_DIR)

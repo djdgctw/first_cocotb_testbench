@@ -27,13 +27,22 @@ MK_DIR := $(PWD)/mk
 include $(wildcard $(MK_DIR)/ip_*.mk)
 
 # 顶层 RTL 模块名（你的 add 包了一层 c_addsub_0）
-COCOTB_TOPLEVEL = add
+TOPLEVEL = add
 
 # 测试用例 Python 模块名（testbench/my_test.py）
-COCOTB_TEST_MODULES = my_test
+MODULE = my_test
 
 # 默认仿真器设为 ModelSim
 SIM ?= ModelSim
+
+# ===== 波形录制配置 =====
+# ModelSim 波形输出文件
+VSIM_WLF ?= $(PWD)/sim_build/vsim.wlf
+SIM_ARGS += -wlf $(VSIM_WLF)
+
+# 开启信号可见性并在启动时执行 wave.do
+SIM_ARGS += -voptargs=+acc
+SIM_ARGS += -do {do $(PWD)/wave.do}
 
 # 包含 cocotb 提供的标准仿真 Makefile（里面定义了 sim / results.xml 等目标）
 include $(shell cocotb-config --makefiles)/Makefile.sim
@@ -42,6 +51,10 @@ include $(shell cocotb-config --makefiles)/Makefile.sim
 
 LOG_DIR ?= logs
 SIM_LABEL := $(if $(strip $(SIM)),$(strip $(SIM)),default_sim)
+REPORT_BASENAME ?= report
+REPORT_LOG ?= $(LOG_DIR)/$(REPORT_BASENAME).log
+REPORT_WLF ?= $(LOG_DIR)/$(REPORT_BASENAME).wlf
+REPORT_XML ?= $(LOG_DIR)/$(REPORT_BASENAME).xml
 
 .PHONY: all run-logged clean gen_ip_mk
 
@@ -50,16 +63,32 @@ all: clean run-logged
 
 # 带日志运行：调用 cocotb 自带的 sim 目标，并把终端输出 tee 到日志文件里
 run-logged: | $(LOG_DIR)
-	@ts=$$(date +%Y%m%d_%H%M%S); \
-	  log="$(LOG_DIR)/$(SIM_LABEL)_$$ts.log"; \
+	@log="$(REPORT_LOG)"; \
+	  wave="$(REPORT_WLF)"; \
+	  xml="$(REPORT_XML)"; \
+	  xml_tmp="results.xml"; \
 	  echo "[cocotb] simulation output will be saved to $$log"; \
-	  $(MAKE) --no-print-directory sim 2>&1 | tee "$$log"
+	  if $(MAKE) --no-print-directory sim 2>&1 | tee "$$log"; then \
+	    if [ -f "$(VSIM_WLF)" ]; then \
+	      cp -f "$(VSIM_WLF)" "$$wave"; \
+	      echo "[cocotb] waveform saved to $$wave"; \
+	    else \
+	      echo "[cocotb] warning: waveform file $(VSIM_WLF) not found"; \
+	    fi; \
+	    if [ -f "$$xml_tmp" ]; then \
+	      mv -f "$$xml_tmp" "$$xml"; \
+	      echo "[cocotb] results.xml saved to $$xml"; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi
 
 # 清理仿真生成物
 clean::
 	@echo "[cocotb] cleaning simulation artifacts"
 	@rm -rf $(LOG_DIR) sim_build results.xml
-	@rm -f *.log
+	@rm -f *.log modelsim.ini transcript
+	@rm -rf testbench/__pycache__
 
 # 一键扫描 Vivado 工程下所有 IP 的 compile.do，生成 mk/ip_<ipname>_sources.mk
 gen_ip_mk:

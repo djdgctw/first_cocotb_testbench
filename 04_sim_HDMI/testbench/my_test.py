@@ -30,6 +30,6 @@ async def test_hdmi_color_bars(dut):
     # 如果你想看完整的一帧，需要跑很久（16ms），生成的文件会很大。
     # 这里我们跑 50微秒，足够看清行同步和彩条数据了。
     
-    await Timer(16, units="ms")
+    await Timer(16, units="us")
     
     print("Simulation finished!")
