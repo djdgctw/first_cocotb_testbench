@@ -55,6 +55,7 @@ REPORT_BASENAME ?= report
 REPORT_LOG ?= $(LOG_DIR)/$(REPORT_BASENAME).log
 REPORT_WLF ?= $(LOG_DIR)/$(REPORT_BASENAME).wlf
 REPORT_XML ?= $(LOG_DIR)/$(REPORT_BASENAME).xml
+UTF8_FIXER   ?= $(PWD)/tools/fix_modelsim_utf8.py
 
 .PHONY: all run-logged clean gen_ip_mk
 
@@ -67,8 +68,12 @@ run-logged: | $(LOG_DIR)
 	  wave="$(REPORT_WLF)"; \
 	  xml="$(REPORT_XML)"; \
 	  xml_tmp="results.xml"; \
+	  filter_cmd="cat"; \
+	  if [ -f "$(UTF8_FIXER)" ]; then \
+	    filter_cmd="python3 $(UTF8_FIXER)"; \
+	  fi; \
 	  echo "[cocotb] simulation output will be saved to $$log"; \
-	  if $(MAKE) --no-print-directory sim 2>&1 | tee "$$log"; then \
+	  if $(MAKE) --no-print-directory sim 2>&1 | $$filter_cmd | tee "$$log"; then \
 	    if [ -f "$(VSIM_WLF)" ]; then \
 	      cp -f "$(VSIM_WLF)" "$$wave"; \
 	      echo "[cocotb] waveform saved to $$wave"; \
@@ -89,6 +94,7 @@ clean::
 	@rm -rf $(LOG_DIR) sim_build results.xml
 	@rm -f *.log modelsim.ini transcript
 	@rm -rf testbench/__pycache__
+	@rm -f *.csv
 
 # 一键扫描 Vivado 工程下所有 IP 的 compile.do，生成 mk/ip_<ipname>_sources.mk
 gen_ip_mk:

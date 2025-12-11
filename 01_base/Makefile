@@ -2,6 +2,11 @@
 # 这样 cocotb 在运行时就能找到你的测试文件（例如 test_dff.py）。
 export PYTHONPATH := $(PWD)/testbench:$(PYTHONPATH)
 
+# 统一强制使用 UTF-8，避免控制台/日志出现中文乱码
+export LANG := en_US.UTF-8
+export LC_ALL := en_US.UTF-8
+export PYTHONIOENCODING := utf-8
+
 # 指定被测设计（DUT）的语言为 Verilog（也支持 SystemVerilog，cocotb 通常将其归为 Verilog）
 TOPLEVEL_LANG = verilog
 
@@ -64,6 +69,8 @@ run-logged-waves: run-logged
 clean::
 	@echo "[cocotb] 正在清理仿真生成文件"
 	@rm -rf $(LOG_DIR) sim_build results.xml
+	@rm -f *.log transcript modelsim.ini dump.vcd
+	@rm -rf testbench/__pycache__
 
 # 日志目录不存在时自动创建
 $(LOG_DIR):

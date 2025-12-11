@@ -63,6 +63,7 @@ SIM_LABEL := $(if $(strip $(SIM)),$(strip $(SIM)),default_sim)
 REPORT_LOG  ?= $(LOG_DIR)/$(REPORT_BASENAME).log
 REPORT_WLF  ?= $(LOG_DIR)/$(REPORT_BASENAME).wlf
 REPORT_XML  ?= $(LOG_DIR)/$(REPORT_BASENAME).xml
+UTF8_FIXER   ?= $(PWD)/tools/fix_modelsim_utf8.py
 
 .PHONY: all run-logged clean gen_ip_mk
 
@@ -73,7 +74,11 @@ run-logged: | $(LOG_DIR)
 	  log="$(REPORT_LOG)"; \
 	  wave="$(REPORT_WLF)"; \
 	  xml_tmp="results.xml"; \
-	  if $(MAKE) --no-print-directory sim 2>&1 | tee "$$log"; then \
+	  filter_cmd="cat"; \
+	  if [ -f "$(UTF8_FIXER)" ]; then \
+	    filter_cmd="python3 $(UTF8_FIXER)"; \
+	  fi; \
+	  if $(MAKE) --no-print-directory sim 2>&1 | $$filter_cmd | tee "$$log"; then \
 	    if [ -f "$(VSIM_WLF)" ]; then \
 	      cp -f "$(VSIM_WLF)" "$$wave"; \
 	      echo "✅ 波形已生成: $$wave"; \
@@ -93,6 +98,7 @@ clean::
 	@rm -rf $(LOG_DIR) sim_build results.xml
 	@rm -f *.log modelsim.ini transcript
 	@rm -rf testbench/__pycache__
+	@rm -f *.csv
 
 gen_ip_mk:
 	@mkdir -p $(MK_DIR)
